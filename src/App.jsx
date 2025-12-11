@@ -22,9 +22,16 @@ function App() {
   ];
 
   const {
+    transcript,
     listening,
     browserSupportsSpeechRecognition
   } = useSpeechRecognition({ commands });
+
+  useEffect(() => {
+    if (transcript) {
+        console.log("Detected speech:", transcript);
+    }
+  }, [transcript]);
 
   useEffect(() => {
     if (browserSupportsSpeechRecognition && !listening) {
