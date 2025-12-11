@@ -10,9 +10,10 @@ function App() {
   const commands = [
     {
       command: ['Hey Darwin', 'Hi Darwin', 'Hey Darling', 'Hey Darin', 'Hey Derwin', 'Darwin'],
-      callback: () => {
+      callback: ({ resetTranscript }) => {
         console.log("Wake word detected!");
         setIsModalOpen(true);
+        resetTranscript();
       },
       matchInterim: true,
       isFuzzyMatch: true,
@@ -24,6 +25,7 @@ function App() {
   const {
     transcript,
     listening,
+    resetTranscript,
     browserSupportsSpeechRecognition
   } = useSpeechRecognition({ commands });
 
@@ -63,6 +65,8 @@ function App() {
       <DarwinModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        transcript={transcript}
+        resetTranscript={resetTranscript}
       />
     </div>
   );
