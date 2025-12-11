@@ -4,8 +4,8 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  /* Dark Blue #1c1563 at 95% opacity for a deep immersive feel */
-  background: rgba(28, 21, 99, 0.95);
+  /* White background as requested for contrast with content */
+  background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px);
   display: flex;
   justify-content: center;
@@ -23,11 +23,11 @@
 }
 
 .logo {
-  width: 250px; /* Increased size as the new logo is horizontal */
+  width: 250px;
   height: auto;
   margin-bottom: 40px;
-  /* Subtle purple glow matching the accent */
-  filter: drop-shadow(0 0 20px rgba(153, 37, 248, 0.4));
+  /* Reduced glow for white background, keeping slight shadow for depth */
+  filter: drop-shadow(0 0 10px rgba(153, 37, 248, 0.2));
   animation: float 3s ease-in-out infinite;
 }
 
@@ -45,13 +45,14 @@
   font-size: 1.5rem;
   font-family: 'Inter', system-ui, sans-serif;
   border-radius: 40px;
-  /* Subtle border using the light purple accent */
-  border: 1px solid rgba(170, 49, 252, 0.3);
-  /* Gradient background: Deep Brand Blue to a slightly lighter/purple-tinted blue */
-  background: linear-gradient(135deg, rgba(28, 21, 99, 0.9), rgba(45, 30, 120, 0.95));
-  color: white;
+  /* Border using the brand blue/purple accent */
+  border: 1px solid rgba(153, 37, 248, 0.2);
+  /* Light grey background for input */
+  background: #f8f9fa;
+  /* Dark text color: Deep Brand Blue */
+  color: #1c1563;
   outline: none;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 1);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
@@ -59,12 +60,12 @@
   /* Bright purple accent border on focus */
   border-color: #9925f8;
   /* Glow effect with the purple accent */
-  box-shadow: 0 0 0 4px rgba(153, 37, 248, 0.25), 0 20px 60px rgba(0, 0, 0, 0.5);
-  background: linear-gradient(135deg, rgba(35, 26, 120, 0.95), rgba(55, 36, 140, 0.95));
+  box-shadow: 0 0 0 4px rgba(153, 37, 248, 0.15), 0 20px 40px rgba(153, 37, 248, 0.1);
+  background: #ffffff;
 }
 
 .prompt-input::placeholder {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(28, 21, 99, 0.4); /* Faded brand blue for placeholder */
   font-weight: 300;
 }
 
