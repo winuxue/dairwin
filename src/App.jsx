@@ -9,21 +9,15 @@ function App() {
 
   const commands = [
     {
-      command: 'Hey Darwin',
+      command: ['Hey Darwin', 'Hi Darwin', 'Hey Darling', 'Hey Darin', 'Hey Derwin', 'Darwin'],
       callback: () => {
-        console.log("Hey Darwin detected!");
+        console.log("Wake word detected!");
         setIsModalOpen(true);
       },
       matchInterim: true,
-      bestMatchOnly: true
-    },
-    {
-        command: 'Hi Darwin',
-        callback: () => {
-            console.log("Hi Darwin detected!");
-            setIsModalOpen(true);
-        },
-        matchInterim: true
+      isFuzzyMatch: true,
+      fuzzyMatchingThreshold: 0.5,
+      bestMatchOnly: false
     }
   ];
 
