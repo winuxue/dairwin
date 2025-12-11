@@ -4,8 +4,9 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(10, 25, 41, 0.85); /* Deep dark blue overlay */
-  backdrop-filter: blur(15px);
+  /* Dark Blue #1c1563 at 95% opacity for a deep immersive feel */
+  background: rgba(28, 21, 99, 0.95);
+  backdrop-filter: blur(20px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -22,10 +23,11 @@
 }
 
 .logo {
-  width: 120px;
+  width: 250px; /* Increased size as the new logo is horizontal */
   height: auto;
-  margin-bottom: 30px;
-  filter: drop-shadow(0 0 15px rgba(0, 153, 204, 0.6));
+  margin-bottom: 40px;
+  /* Subtle purple glow matching the accent */
+  filter: drop-shadow(0 0 20px rgba(153, 37, 248, 0.4));
   animation: float 3s ease-in-out infinite;
 }
 
@@ -39,26 +41,30 @@
 .prompt-input {
   width: 100%;
   padding: 24px 32px;
-  padding-right: 60px; /* Space for icon if needed */
+  padding-right: 60px;
   font-size: 1.5rem;
   font-family: 'Inter', system-ui, sans-serif;
   border-radius: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: linear-gradient(135deg, rgba(0, 77, 153, 0.9), rgba(0, 30, 60, 0.95));
+  /* Subtle border using the light purple accent */
+  border: 1px solid rgba(170, 49, 252, 0.3);
+  /* Gradient background: Deep Brand Blue to a slightly lighter/purple-tinted blue */
+  background: linear-gradient(135deg, rgba(28, 21, 99, 0.9), rgba(45, 30, 120, 0.95));
   color: white;
   outline: none;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .prompt-input:focus {
-  border-color: #00aaff;
-  box-shadow: 0 0 0 4px rgba(0, 170, 255, 0.2), 0 15px 50px rgba(0, 0, 0, 0.4);
-  background: linear-gradient(135deg, rgba(0, 85, 170, 0.95), rgba(0, 40, 80, 0.95));
+  /* Bright purple accent border on focus */
+  border-color: #9925f8;
+  /* Glow effect with the purple accent */
+  box-shadow: 0 0 0 4px rgba(153, 37, 248, 0.25), 0 20px 60px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, rgba(35, 26, 120, 0.95), rgba(55, 36, 140, 0.95));
 }
 
 .prompt-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
   font-weight: 300;
 }
 
