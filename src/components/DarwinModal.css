@@ -155,3 +155,68 @@
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+.table-message-container {
+  margin-top: 12px;
+  width: 100%;
+}
+
+.table-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.data-table thead {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.data-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  white-space: nowrap;
+}
+
+.data-table th.numeric {
+  text-align: right;
+}
+
+.data-table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background-color 0.2s ease;
+}
+
+.data-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.data-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.data-table td {
+  padding: 10px 16px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.data-table td.numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

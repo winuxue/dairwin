@@ -128,8 +128,19 @@ const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript, 
         const data = await response.json();
 
         if (data && data.length > 0) {
-            // Append bot messages
-            const botMessages = data.map(msg => ({ text: msg.text || "Received non-text response", sender: 'bot' }));
+            const botMessages = data.map(msg => {
+                if (msg.custom && msg.custom.type === 'chart' && msg.custom.rows) {
+                    return {
+                        text: msg.text || '',
+                        sender: 'bot',
+                        custom: msg.custom
+                    };
+                }
+                return {
+                    text: msg.text || "Received non-text response",
+                    sender: 'bot'
+                };
+            });
             setMessages(prev => [...prev, ...botMessages]);
         } else {
              setMessages(prev => [...prev, { text: "No response from AI.", sender: 'bot' }]);
@@ -220,6 +231,59 @@ Return ONLY the SQL query, nothing else. Do not use markdown formatting like \`\
     }
   }, [prompt, isOpen]);
 
+  const formatNumber = (value) => {
+    if (typeof value === 'number') {
+      return value.toLocaleString();
+    }
+    return value;
+  };
+
+  const isNumeric = (value) => {
+    return typeof value === 'number';
+  };
+
+  const renderTableMessage = (custom) => {
+    if (!custom.rows || custom.rows.length === 0) return null;
+
+    const columns = Object.keys(custom.rows[0]);
+    const numericColumns = new Set();
+    columns.forEach(col => {
+      if (custom.rows.some(row => isNumeric(row[col]))) {
+        numericColumns.add(col);
+      }
+    });
+
+    return (
+      <div className="table-message-container">
+        {custom.title && <div className="table-title">{custom.title}</div>}
+        <div className="table-wrapper">
+          <table className="data-table">
+            <thead>
+              <tr>
+                {columns.map(col => (
+                  <th key={col} className={numericColumns.has(col) ? 'numeric' : ''}>
+                    {col}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {custom.rows.map((row, rowIdx) => (
+                <tr key={rowIdx}>
+                  {columns.map(col => (
+                    <td key={col} className={numericColumns.has(col) ? 'numeric' : ''}>
+                      {formatNumber(row[col])}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -234,7 +298,8 @@ Return ONLY the SQL query, nothing else. Do not use markdown formatting like \`\
         <div className="messages-container">
             {messages.map((msg, idx) => (
                 <div key={idx} className={`chat-message ${msg.sender}`}>
-                    {msg.text}
+                    {msg.text && <div>{msg.text}</div>}
+                    {msg.custom && msg.custom.type === 'chart' && renderTableMessage(msg.custom)}
                 </div>
             ))}
             {isThinking && <div className="thinking-text">Thinking...</div>}
