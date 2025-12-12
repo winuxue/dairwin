@@ -3,13 +3,15 @@ import './DarwinModal.css';
 
 const WAKE_WORDS = ['hey darwin', 'hi darwin', 'hey darling', 'hey darin', 'hey derwin', 'darwin'];
 
-const DarwinModal = ({ isOpen, onClose, transcript, resetTranscript }) => {
+const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript }) => {
   const [prompt, setPrompt] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [isThinking, setIsThinking] = useState(false);
   const textareaRef = useRef(null);
 
   // Sync transcript with local prompt state and clean wake words
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !isThinking) {
         // If transcript is empty (reset), prompt should be empty
         if (!transcript) {
             setPrompt('');
@@ -19,7 +21,6 @@ const DarwinModal = ({ isOpen, onClose, transcript, resetTranscript }) => {
         let cleanTranscript = transcript;
 
         // Strip wake words from the beginning
-        // We create a regex from the wake words
         const wakeWordPattern = new RegExp(`^(${WAKE_WORDS.join('|')})[\\s.,]*`, 'i');
         cleanTranscript = cleanTranscript.replace(wakeWordPattern, '');
 
@@ -30,15 +31,30 @@ const DarwinModal = ({ isOpen, onClose, transcript, resetTranscript }) => {
 
         setPrompt(cleanTranscript);
     }
-  }, [transcript, isOpen]);
+  }, [transcript, isOpen, isThinking]);
+
+  const handleExecution = (cleanPrompt) => {
+      console.log('Execution triggered. Prompt:', cleanPrompt);
+
+      // Add to messages
+      setMessages(prev => [...prev, { text: cleanPrompt, sender: 'user' }]);
+
+      // Set thinking state
+      setIsThinking(true);
+
+      // Clear input
+      setPrompt('');
+      resetTranscript();
+
+      // Notify parent to stop listening
+      if (onExecute) onExecute();
+  };
 
   // Check for execution command
   useEffect(() => {
-    if (isOpen && prompt) {
+    if (isOpen && prompt && !isThinking) {
       const lowerPrompt = prompt.toLowerCase();
       if (lowerPrompt.endsWith('execute') || lowerPrompt.endsWith('ejecutar') || lowerPrompt.endsWith(' execute') || lowerPrompt.endsWith(' ejecutar')) {
-        // Extract the clean command (remove the trigger word)
-        // We handle both "execute" and "ejecutar"
         let cleanPrompt = prompt;
         if (lowerPrompt.endsWith('execute')) {
             cleanPrompt = prompt.slice(0, -7).trim();
@@ -46,16 +62,19 @@ const DarwinModal = ({ isOpen, onClose, transcript, resetTranscript }) => {
             cleanPrompt = prompt.slice(0, -8).trim();
         }
 
-        console.log('Voice execution triggered. Prompt:', cleanPrompt);
-        // Clear the input and transcript
-        setPrompt('');
-        resetTranscript();
-
-        // Optionally close the modal or keep it open for results.
-        // For now, we will just log the execution as requested.
+        handleExecution(cleanPrompt);
       }
     }
-  }, [prompt, isOpen, resetTranscript]);
+  }, [prompt, isOpen, isThinking]);
+
+  // Reset state when modal opens
+  useEffect(() => {
+    if (isOpen) {
+        setMessages([]);
+        setIsThinking(false);
+        setPrompt('');
+    }
+  }, [isOpen]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -73,23 +92,34 @@ const DarwinModal = ({ isOpen, onClose, transcript, resetTranscript }) => {
         <img
           src="/logo.png"
           alt="Darwin Logo"
-          className="logo"
+          className={`logo ${isThinking ? 'thinking' : ''}`}
         />
+        {isThinking && <div className="thinking-text">Thinking...</div>}
+
+        <div className="messages-container">
+            {messages.map((msg, idx) => (
+                <div key={idx} className={`chat-message ${msg.sender}`}>
+                    {msg.text}
+                </div>
+            ))}
+        </div>
+
         <div className="input-wrapper">
           <textarea
             ref={textareaRef}
             className="prompt-input"
-            placeholder="Ask Darwin anything..."
+            placeholder={isThinking ? "" : "Ask Darwin anything..."}
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             autoFocus
             rows={1}
+            disabled={isThinking}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                console.log('User asked:', prompt);
-                setPrompt('');
-                resetTranscript();
+                if (prompt.trim()) {
+                    handleExecution(prompt);
+                }
               }
             }}
           />

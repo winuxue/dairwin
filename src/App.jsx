@@ -6,6 +6,7 @@ import './App.css';
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [shouldListen, setShouldListen] = useState(true);
 
   const commands = [
     {
@@ -35,27 +36,39 @@ function App() {
     }
   }, [transcript]);
 
+  // Manage listening state
   useEffect(() => {
-    if (browserSupportsSpeechRecognition && !listening) {
-        // Attempt to start listening. Note: Browsers usually block this without user interaction.
-        // We will add a manual start button as fallback/initializer.
+    if (!browserSupportsSpeechRecognition) return;
+
+    if (shouldListen && !listening) {
         SpeechRecognition.startListening({ continuous: true, language: 'en-US' });
+    } else if (!shouldListen && listening) {
+        SpeechRecognition.stopListening();
     }
-  }, [browserSupportsSpeechRecognition, listening]);
+  }, [shouldListen, listening, browserSupportsSpeechRecognition]);
 
   if (!browserSupportsSpeechRecognition) {
     return <div style={{ color: 'white' }}>Browser doesn't support speech recognition.</div>;
   }
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setShouldListen(true);
+  };
+
+  const handleExecution = () => {
+    setShouldListen(false);
+  };
 
   return (
     <div className="app-container">
        <div className="status-indicator">
           <p>Microphone: {listening ? 'Active' : 'Inactive'}</p>
           <p className="instruction">Say "Hey Darwin" to start.</p>
-          {!listening && (
+          {!listening && shouldListen && (
             <button
                 className="enable-mic-btn"
-                onClick={() => SpeechRecognition.startListening({ continuous: true, language: 'en-US' })}
+                onClick={() => setShouldListen(true)}
             >
               Start Listening
             </button>
@@ -64,7 +77,8 @@ function App() {
 
       <DarwinModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleModalClose}
+        onExecute={handleExecution}
         transcript={transcript}
         resetTranscript={resetTranscript}
       />
