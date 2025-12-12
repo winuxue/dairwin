@@ -4,18 +4,29 @@ import './DarwinModal.css';
 
 const WAKE_WORDS = ['hey darwin', 'hi darwin', 'hey darling', 'hey darin', 'hey derwin', 'darwin'];
 
-const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript, aiMode }) => {
+const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript, aiMode, sessionKey }) => {
   const [prompt, setPrompt] = useState('');
   const [messages, setMessages] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
   const textareaRef = useRef(null);
+  const lastProcessedTranscriptRef = useRef('');
 
-  // Sync transcript with local prompt state and clean wake words
+  // Handle Session Reset (Wake Word)
+  useEffect(() => {
+    if (isOpen) {
+        setMessages([]);
+        setIsThinking(false);
+        setPrompt('');
+        lastProcessedTranscriptRef.current = '';
+    }
+  }, [sessionKey, isOpen]);
+
+  // Sync transcript with local prompt state
   useEffect(() => {
     if (isOpen && !isThinking) {
-        // If transcript is empty (reset), prompt should be empty
         if (!transcript) {
-            setPrompt('');
+            // Transcript was reset (e.g. by manual edit or wake word)
+            lastProcessedTranscriptRef.current = '';
             return;
         }
 
@@ -25,12 +36,50 @@ const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript, 
         const wakeWordPattern = new RegExp(`^(${WAKE_WORDS.join('|')})[\\s.,]*`, 'i');
         cleanTranscript = cleanTranscript.replace(wakeWordPattern, '');
 
-        // Capitalize the first letter if we stripped something and it's not empty
-        if (cleanTranscript.length > 0) {
+        // Capitalize only if it's the start
+        if (cleanTranscript.length > 0 && lastProcessedTranscriptRef.current === '') {
             cleanTranscript = cleanTranscript.charAt(0).toUpperCase() + cleanTranscript.slice(1);
         }
 
-        setPrompt(cleanTranscript);
+        const last = lastProcessedTranscriptRef.current;
+
+        // Append logic
+        if (cleanTranscript !== last) {
+            if (cleanTranscript.startsWith(last)) {
+                // Typical append
+                const diff = cleanTranscript.slice(last.length);
+                setPrompt(prev => prev + diff);
+            } else {
+                // Correction or jump.
+                // We attempt to replace the *last processed part* with the *new transcript*.
+                // This is tricky if manual edits happened.
+                // Simple heuristic: If prompt ends with 'last', replace it.
+                // Otherwise, just append the whole thing?
+                // Let's assume standard append behavior for robustness.
+                // If it doesn't start with last, it's a correction.
+                // We'll trust the engine's new view of the "session".
+                // But we must preserve "Manual Edits" that occurred *before* the current voice session.
+
+                // Since we resetTranscript() on manual edit, `last` is usually '' unless we spoke multiple phrases.
+                // So if we spoke, `last`="Hello". Transcript becomes "Hello world". Diff=" world".
+                // If engine corrects "Hello" to "Hullo", startsWith fails.
+
+                // Fallback: If we can't cleanly diff, we just append the whole cleanTranscript if last was empty.
+                if (last === '') {
+                     setPrompt(prev => prev + cleanTranscript);
+                } else {
+                    // Complex correction. For now, let's just append to be safe against losing manual edits.
+                    // Or better: Replace the suffix matching `last` with `cleanTranscript`.
+                    setPrompt(prev => {
+                        if (prev.endsWith(last)) {
+                            return prev.slice(0, -last.length) + cleanTranscript;
+                        }
+                        return prev + " " + cleanTranscript;
+                    });
+                }
+            }
+            lastProcessedTranscriptRef.current = cleanTranscript;
+        }
     }
   }, [transcript, isOpen, isThinking]);
 
@@ -46,6 +95,7 @@ const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript, 
       // Clear input
       setPrompt('');
       resetTranscript();
+      lastProcessedTranscriptRef.current = '';
 
       // Notify parent to stop listening
       if (onExecute) onExecute();
@@ -144,12 +194,13 @@ Return ONLY the SQL query, nothing else. Do not use markdown formatting like \`\
       }
   };
 
-  // Check for execution command
+  // Check for execution command (Voice)
   useEffect(() => {
     if (isOpen && prompt && !isThinking) {
       const lowerPrompt = prompt.toLowerCase();
       if (lowerPrompt.endsWith('execute') || lowerPrompt.endsWith('ejecutar') || lowerPrompt.endsWith(' execute') || lowerPrompt.endsWith(' ejecutar')) {
         let cleanPrompt = prompt;
+        // Strip the execution command
         if (lowerPrompt.endsWith('execute')) {
             cleanPrompt = prompt.slice(0, -7).trim();
         } else if (lowerPrompt.endsWith('ejecutar')) {
@@ -160,15 +211,6 @@ Return ONLY the SQL query, nothing else. Do not use markdown formatting like \`\
       }
     }
   }, [prompt, isOpen, isThinking]);
-
-  // Reset state when modal opens
-  useEffect(() => {
-    if (isOpen) {
-        setMessages([]);
-        setIsThinking(false);
-        setPrompt('');
-    }
-  }, [isOpen]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -204,7 +246,10 @@ Return ONLY the SQL query, nothing else. Do not use markdown formatting like \`\
             className="prompt-input"
             placeholder={isThinking ? "" : `Ask Darwin (${aiMode === 'gemini' ? 'Gemini' : 'Rasa'})...`}
             value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
+            onChange={(e) => {
+                setPrompt(e.target.value);
+                resetTranscript(); // Reset voice stream on manual edit to avoid conflicts
+            }}
             autoFocus
             rows={1}
             disabled={isThinking}

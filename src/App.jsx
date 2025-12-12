@@ -7,7 +7,8 @@ import './App.css';
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [shouldListen, setShouldListen] = useState(true);
-  const [aiMode, setAiMode] = useState('rasa'); // 'rasa' or 'gemini'
+  const [aiMode, setAiMode] = useState('gemini'); // 'rasa' or 'gemini'
+  const [sessionKey, setSessionKey] = useState(0);
 
   const commands = [
     {
@@ -16,6 +17,7 @@ function App() {
         console.log("Wake word detected!");
         setIsModalOpen(true);
         resetTranscript();
+        setSessionKey(prev => prev + 1);
       },
       matchInterim: true,
       isFuzzyMatch: true,
@@ -96,6 +98,7 @@ function App() {
         transcript={transcript}
         resetTranscript={resetTranscript}
         aiMode={aiMode}
+        sessionKey={sessionKey}
       />
     </div>
   );
