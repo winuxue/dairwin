@@ -38,11 +38,12 @@
 .thinking-text {
   font-family: 'Inter', system-ui, sans-serif;
   color: #9925f8;
-  font-size: 1.2rem;
-  margin-top: -30px;
-  margin-bottom: 40px;
+  font-size: 1.1rem;
   font-weight: 500;
   animation: fadeIn 0.5s ease-out;
+  align-self: flex-start; /* Align to the left like a bot message */
+  margin-left: 10px;
+  margin-bottom: 12px;
 }
 
 .messages-container {

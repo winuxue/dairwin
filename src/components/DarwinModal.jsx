@@ -128,7 +128,6 @@ const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript }
           alt="Darwin Logo"
           className={`logo ${isThinking ? 'thinking' : ''}`}
         />
-        {isThinking && <div className="thinking-text">Thinking...</div>}
 
         <div className="messages-container">
             {messages.map((msg, idx) => (
@@ -136,6 +135,7 @@ const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript }
                     {msg.text}
                 </div>
             ))}
+            {isThinking && <div className="thinking-text">Thinking...</div>}
         </div>
 
         <div className="input-wrapper">
