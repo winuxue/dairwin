@@ -246,3 +246,48 @@
   transform: translateY(0);
   box-shadow: 0 4px 10px rgba(153, 37, 248, 0.3);
 }
+
+.reasoning-container {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.reasoning-toggle {
+  background: none;
+  border: none;
+  color: rgba(153, 37, 248, 1); /* Bright purple brand color */
+  font-size: 0.85rem;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  opacity: 0.9;
+  transition: all 0.2s ease;
+}
+
+.reasoning-toggle:hover {
+  opacity: 1;
+  color: #c069ff;
+}
+
+.reasoning-code {
+  margin-top: 8px;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  padding: 12px;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.reasoning-code pre {
+  margin: 0;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 0.85rem;
+  color: #e0e0e0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
