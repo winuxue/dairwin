@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './DarwinModal.css';
 
 const DarwinModal = ({ isOpen, onClose, transcript, resetTranscript }) => {
   const [prompt, setPrompt] = useState('');
+  const textareaRef = useRef(null);
 
   // Sync transcript with local prompt state
   useEffect(() => {
@@ -36,6 +37,14 @@ const DarwinModal = ({ isOpen, onClose, transcript, resetTranscript }) => {
     }
   }, [prompt, isOpen, resetTranscript]);
 
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+        textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    }
+  }, [prompt, isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -47,15 +56,17 @@ const DarwinModal = ({ isOpen, onClose, transcript, resetTranscript }) => {
           className="logo"
         />
         <div className="input-wrapper">
-          <input
-            type="text"
+          <textarea
+            ref={textareaRef}
             className="prompt-input"
             placeholder="Ask Darwin anything..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             autoFocus
+            rows={1}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
                 console.log('User asked:', prompt);
                 setPrompt('');
                 resetTranscript();

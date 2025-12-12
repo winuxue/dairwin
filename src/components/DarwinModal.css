@@ -53,7 +53,14 @@
   color: #1c1563;
   outline: none;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 1);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: all 0.2s ease;
+
+  /* Textarea specific styles */
+  resize: none;
+  overflow: hidden;
+  min-height: 80px; /* Base height similar to previous input padding */
+  line-height: 1.5;
+  white-space: pre-wrap;
 }
 
 .prompt-input:focus {
