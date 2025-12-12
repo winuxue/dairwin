@@ -7,6 +7,7 @@ import './App.css';
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [shouldListen, setShouldListen] = useState(true);
+  const [aiMode, setAiMode] = useState('rasa'); // 'rasa' or 'gemini'
 
   const commands = [
     {
@@ -73,6 +74,19 @@ function App() {
               Start Listening
             </button>
           )}
+
+          <div className="mode-toggle">
+            <span className={aiMode === 'rasa' ? 'active' : ''}>Rasa</span>
+            <label className="switch">
+                <input
+                    type="checkbox"
+                    checked={aiMode === 'gemini'}
+                    onChange={() => setAiMode(prev => prev === 'rasa' ? 'gemini' : 'rasa')}
+                />
+                <span className="slider round"></span>
+            </label>
+            <span className={aiMode === 'gemini' ? 'active' : ''}>Gemini</span>
+          </div>
        </div>
 
       <DarwinModal
@@ -81,6 +95,7 @@ function App() {
         onExecute={handleExecution}
         transcript={transcript}
         resetTranscript={resetTranscript}
+        aiMode={aiMode}
       />
     </div>
   );

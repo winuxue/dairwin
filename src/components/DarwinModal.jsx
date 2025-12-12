@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import './DarwinModal.css';
 
 const WAKE_WORDS = ['hey darwin', 'hi darwin', 'hey darling', 'hey darin', 'hey derwin', 'darwin'];
 
-const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript }) => {
+const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript, aiMode }) => {
   const [prompt, setPrompt] = useState('');
   const [messages, setMessages] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
@@ -34,7 +35,7 @@ const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript }
   }, [transcript, isOpen, isThinking]);
 
   const handleExecution = async (cleanPrompt) => {
-      console.log('Execution triggered. Prompt:', cleanPrompt);
+      console.log(`Execution triggered in ${aiMode} mode. Prompt:`, cleanPrompt);
 
       // Add to messages
       setMessages(prev => [...prev, { text: cleanPrompt, sender: 'user' }]);
@@ -49,9 +50,17 @@ const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript }
       // Notify parent to stop listening
       if (onExecute) onExecute();
 
-      // Send to Rasa
+      if (aiMode === 'gemini') {
+          await handleGeminiExecution(cleanPrompt);
+      } else {
+          await handleRasaExecution(cleanPrompt);
+      }
+  };
+
+  const handleRasaExecution = async (cleanPrompt) => {
       try {
-        const response = await fetch('http://localhost:5005/webhooks/rest/webhook', {
+        const rasaUrl = import.meta.env.VITE_RASA_SERVER_URL || 'http://localhost:5005';
+        const response = await fetch(`${rasaUrl}/webhooks/rest/webhook`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -78,7 +87,58 @@ const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript }
 
       } catch (error) {
           console.error('Error fetching from Rasa:', error);
-          setMessages(prev => [...prev, { text: "Sorry, I'm having trouble connecting to the server.", sender: 'bot' }]);
+          setMessages(prev => [...prev, { text: "Sorry, I'm having trouble connecting to the Rasa server.", sender: 'bot' }]);
+      } finally {
+          setIsThinking(false);
+      }
+  };
+
+  const handleGeminiExecution = async (cleanPrompt) => {
+      try {
+          // 1. Fetch table structure
+          let tableStructure = '';
+          try {
+              const res = await fetch('/sql/rep_propertiesByAgent.sql');
+              if (res.ok) {
+                  tableStructure = await res.text();
+              } else {
+                  console.error("Failed to fetch SQL structure file.");
+                  tableStructure = "Could not load table structure.";
+              }
+          } catch (e) {
+              console.error("Error fetching SQL file:", e);
+              tableStructure = "Error loading table structure.";
+          }
+
+          // 2. Call Gemini
+          const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+          if (!apiKey || apiKey === 'PLACEHOLDER_KEY') {
+             throw new Error("Gemini API Key is missing in .env");
+          }
+
+          const genAI = new GoogleGenerativeAI(apiKey);
+          const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+          const promptText = `
+You are a SQL Server expert.
+Using the following table structure:
+\`\`\`sql
+${tableStructure}
+\`\`\`
+
+Generate a SQL Server query to answer this question: "${cleanPrompt}".
+Return ONLY the SQL query, nothing else. Do not use markdown formatting like \`\`\`sql.
+          `;
+
+          const result = await model.generateContent(promptText);
+          const response = await result.response;
+          const text = response.text();
+
+          setMessages(prev => [...prev, { text: text, sender: 'bot' }]);
+
+      } catch (error) {
+          console.error('Error fetching from Gemini:', error);
+          setMessages(prev => [...prev, { text: `Error: ${error.message}`, sender: 'bot' }]);
       } finally {
           setIsThinking(false);
       }
@@ -142,7 +202,7 @@ const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript }
           <textarea
             ref={textareaRef}
             className="prompt-input"
-            placeholder={isThinking ? "" : "Ask Darwin anything..."}
+            placeholder={isThinking ? "" : `Ask Darwin (${aiMode === 'gemini' ? 'Gemini' : 'Rasa'})...`}
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             autoFocus
