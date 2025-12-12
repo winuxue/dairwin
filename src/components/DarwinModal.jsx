@@ -33,7 +33,7 @@ const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript }
     }
   }, [transcript, isOpen, isThinking]);
 
-  const handleExecution = (cleanPrompt) => {
+  const handleExecution = async (cleanPrompt) => {
       console.log('Execution triggered. Prompt:', cleanPrompt);
 
       // Add to messages
@@ -48,6 +48,40 @@ const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript }
 
       // Notify parent to stop listening
       if (onExecute) onExecute();
+
+      // Send to Rasa
+      try {
+        const response = await fetch('http://localhost:5005/webhooks/rest/webhook', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                sender: "user",
+                message: cleanPrompt
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+
+        if (data && data.length > 0) {
+            // Append bot messages
+            const botMessages = data.map(msg => ({ text: msg.text || "Received non-text response", sender: 'bot' }));
+            setMessages(prev => [...prev, ...botMessages]);
+        } else {
+             setMessages(prev => [...prev, { text: "No response from AI.", sender: 'bot' }]);
+        }
+
+      } catch (error) {
+          console.error('Error fetching from Rasa:', error);
+          setMessages(prev => [...prev, { text: "Sorry, I'm having trouble connecting to the server.", sender: 'bot' }]);
+      } finally {
+          setIsThinking(false);
+      }
   };
 
   // Check for execution command
