@@ -1,14 +1,34 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './DarwinModal.css';
 
+const WAKE_WORDS = ['hey darwin', 'hi darwin', 'hey darling', 'hey darin', 'hey derwin', 'darwin'];
+
 const DarwinModal = ({ isOpen, onClose, transcript, resetTranscript }) => {
   const [prompt, setPrompt] = useState('');
   const textareaRef = useRef(null);
 
-  // Sync transcript with local prompt state
+  // Sync transcript with local prompt state and clean wake words
   useEffect(() => {
-    if (isOpen && transcript) {
-      setPrompt(transcript);
+    if (isOpen) {
+        // If transcript is empty (reset), prompt should be empty
+        if (!transcript) {
+            setPrompt('');
+            return;
+        }
+
+        let cleanTranscript = transcript;
+
+        // Strip wake words from the beginning
+        // We create a regex from the wake words
+        const wakeWordPattern = new RegExp(`^(${WAKE_WORDS.join('|')})[\\s.,]*`, 'i');
+        cleanTranscript = cleanTranscript.replace(wakeWordPattern, '');
+
+        // Capitalize the first letter if we stripped something and it's not empty
+        if (cleanTranscript.length > 0) {
+            cleanTranscript = cleanTranscript.charAt(0).toUpperCase() + cleanTranscript.slice(1);
+        }
+
+        setPrompt(cleanTranscript);
     }
   }, [transcript, isOpen]);
 
