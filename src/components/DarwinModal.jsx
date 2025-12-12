@@ -8,6 +8,7 @@ const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript, 
   const [prompt, setPrompt] = useState('');
   const [messages, setMessages] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const textareaRef = useRef(null);
   const lastProcessedTranscriptRef = useRef('');
 
@@ -17,6 +18,7 @@ const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript, 
         setMessages([]);
         setIsThinking(false);
         setPrompt('');
+        setHasSubmitted(false);
         lastProcessedTranscriptRef.current = '';
     }
   }, [sessionKey, isOpen]);
@@ -91,6 +93,7 @@ const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript, 
 
       // Set thinking state
       setIsThinking(true);
+      setHasSubmitted(true);
 
       // Clear input
       setPrompt('');
@@ -105,6 +108,14 @@ const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript, 
       } else {
           await handleRasaExecution(cleanPrompt);
       }
+  };
+
+  const handleStartOver = () => {
+      setHasSubmitted(false);
+      setMessages([]);
+      setPrompt('');
+      resetTranscript();
+      lastProcessedTranscriptRef.current = '';
   };
 
   const handleRasaExecution = async (cleanPrompt) => {
@@ -305,29 +316,35 @@ Return ONLY the SQL query, nothing else. Do not use markdown formatting like \`\
             {isThinking && <div className="thinking-text">Thinking...</div>}
         </div>
 
-        <div className="input-wrapper">
-          <textarea
-            ref={textareaRef}
-            className="prompt-input"
-            placeholder={isThinking ? "" : `Ask Darwin (${aiMode === 'gemini' ? 'Gemini' : 'Rasa'})...`}
-            value={prompt}
-            onChange={(e) => {
-                setPrompt(e.target.value);
-                resetTranscript(); // Reset voice stream on manual edit to avoid conflicts
-            }}
-            autoFocus
-            rows={1}
-            disabled={isThinking}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                if (prompt.trim()) {
-                    handleExecution(prompt);
-                }
-              }
-            }}
-          />
-        </div>
+        {hasSubmitted ? (
+            <button className="start-over-btn" onClick={handleStartOver}>
+                Start Over
+            </button>
+        ) : (
+            <div className="input-wrapper">
+                <textarea
+                    ref={textareaRef}
+                    className="prompt-input"
+                    placeholder={isThinking ? "" : `Ask Darwin (${aiMode === 'gemini' ? 'Gemini' : 'Rasa'})...`}
+                    value={prompt}
+                    onChange={(e) => {
+                        setPrompt(e.target.value);
+                        resetTranscript(); // Reset voice stream on manual edit to avoid conflicts
+                    }}
+                    autoFocus
+                    rows={1}
+                    disabled={isThinking}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            if (prompt.trim()) {
+                                handleExecution(prompt);
+                            }
+                        }
+                    }}
+                />
+            </div>
+        )}
       </div>
     </div>
   );
