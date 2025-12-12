@@ -94,7 +94,6 @@ const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript, 
 
       // Set thinking state
       setIsThinking(true);
-      setHasSubmitted(true);
 
       // Clear input
       setPrompt('');
@@ -163,6 +162,7 @@ const DarwinModal = ({ isOpen, onClose, onExecute, transcript, resetTranscript, 
           setMessages(prev => [...prev, { text: "Sorry, I'm having trouble connecting to the Rasa server.", sender: 'bot' }]);
       } finally {
           setIsThinking(false);
+          setHasSubmitted(true);
       }
   };
 
@@ -214,6 +214,7 @@ Return ONLY the SQL query, nothing else. Do not use markdown formatting like \`\
           setMessages(prev => [...prev, { text: `Error: ${error.message}`, sender: 'bot' }]);
       } finally {
           setIsThinking(false);
+          setHasSubmitted(true);
       }
   };
 
