@@ -36,7 +36,7 @@
   color: #aaa;
 }
 
-.enable-mic-btn {
+.enable-mic-btn, .manual-open-btn {
   background: #004d99;
   color: white;
   border: none;
@@ -45,10 +45,19 @@
   cursor: pointer;
   margin: 5px;
   font-size: 0.9rem;
+  transition: background 0.3s;
+}
+
+.manual-open-btn {
+    background: #9925f8; /* Brand Purple */
 }
 
 .enable-mic-btn:hover {
   background: #0066cc;
+}
+
+.manual-open-btn:hover {
+    background: #b04dfa;
 }
 
 /* Toggle Switch Styles */

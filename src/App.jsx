@@ -7,7 +7,7 @@ import './App.css';
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [shouldListen, setShouldListen] = useState(true);
-  const [aiMode, setAiMode] = useState('gemini'); // 'rasa' or 'gemini'
+  const [aiMode, setAiMode] = useState('rasa'); // 'rasa' or 'gemini'
   const [sessionKey, setSessionKey] = useState(0);
 
   const commands = [
@@ -59,6 +59,12 @@ function App() {
     setShouldListen(true);
   };
 
+  const handleManualOpen = () => {
+    setIsModalOpen(true);
+    setShouldListen(false); // Disable voice recognition for manual open
+    setSessionKey(prev => prev + 1); // Reset session content
+  };
+
   const handleExecution = () => {
     setShouldListen(false);
   };
@@ -76,6 +82,13 @@ function App() {
               Start Listening
             </button>
           )}
+
+          <button
+            className="manual-open-btn"
+            onClick={handleManualOpen}
+          >
+            Open Prompt
+          </button>
 
           <div className="mode-toggle">
             <span className={aiMode === 'rasa' ? 'active' : ''}>Rasa</span>
